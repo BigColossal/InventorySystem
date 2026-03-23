@@ -13,8 +13,9 @@ class equipmentTypes(Enum):
     Spear = 10
     Bow = 11
     Wand = 12
-    Accessory1 = 13
+    Accessory = 13
     
+EQUIP_STRING_TEMPLATE = "equipped Helmet:None Chestplate:None Leggings:None RightGlove:None LeftGlove:None Boots:None Sword:None LongSword:None DualBlades:None Spear:None Bow:None Wand:None Accessory1:None Accessory2:None Accessory3:None"
 
 class Inventory:
     """
@@ -32,7 +33,7 @@ class Inventory:
 
     def createInventoryFile(self):
         with open("inventory.txt", "w") as f:
-            f.write("equipped")
+            f.write(EQUIP_STRING_TEMPLATE)
         
     def getItems(self) -> dict:
         """
@@ -109,35 +110,60 @@ class Inventory:
         with open("inventory.txt", "w") as f:
             f.writelines(lines)
 
-
-            
     def removeItems(self, item, amt):
         pass
 
     def getEquipped(self):
         pass
 
-    def initializeEquipped(self):
-        pass
-
-    def createEquippedString(self):
-        equippedString = "equipped "
-
     def updateEquipped(self, equipments):
-        newEquipmentString = ""
+        newEquipString, inv = self.getEquipString()
+        newEquipString = list(map(lambda x: x.split(":"), newEquipString))
         for e in equipments:
-            match e.type:
-                case equipmentTypes.Helmet:
-                    pass
+            newEquipString[e.type.value][1] = e.name
+        finalString = "equipped " + " ".join(list(map(lambda x: ":".join(x), newEquipString)))
 
+        if inv[1:]:
+            items = inv[1:]
+        else:
+            items = ""
+        with open("inventory.txt", 'w') as f:
+            f.write(f"{finalString}\n{items}")
 
+    def getEquipString(self):
+        try:
+            with open("inventory.txt", 'r') as f:
+                inventory = f.readlines()
+                newEquipString = inventory[0].split()
+        except FileNotFoundError:
+            self.createInventoryFile()
+            with open("inventory.txt", "r") as f:
+                inventory = f.readlines()
+                newEquipString = inventory[0].split()
+        return newEquipString, inventory
 
-    def removeEquipped(self, equipment_id):
-        pass
+    def removeEquipped(self, equipment_type):
+        newEquipString, inv = self.getEquipString()
+
+class Item:
+    def __init__(self, name):
+        self.name = name
+
+class Equipment(Item):
+    def __init__(self, name, type):
+        super().__init__(name)
+        self.type = type
+
 
 inv = Inventory()
+TestE1 = Equipment("Drako", equipmentTypes.Bow)
+TestE2 = Equipment("Blit", equipmentTypes.Spear)
 
-inv.updateItems([["Item", 2], ["Sword", 1]])
+def main():
+    pass
+
+if __name__ == "__main__":
+    main()
 
                         
 
