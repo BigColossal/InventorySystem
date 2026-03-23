@@ -83,6 +83,24 @@ class Inventory:
                 continue
 
             items = [x for x in line.strip().split(",") if x]
+            # if item already exists and isnt equipment, add to the amount
+            updated_items = []
+
+            for item in items:
+                name, amount = item.split()
+                amount = int(amount)
+
+                # check if this item exists in newItems
+                match = next((x for x in newItems if x[0] == name), None)
+
+                if match:
+                    amount += match[1]  # add quantities
+                    newItems.remove(match)  # remove so we don’t re-add later
+
+                updated_items.append(f"{name} {amount}")
+
+            items = updated_items
+
 
             space = Inventory.inventoryLineCapacity - len(items)
 
@@ -164,6 +182,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-                        
-
