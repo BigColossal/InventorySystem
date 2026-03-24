@@ -27,7 +27,10 @@ class Equipment(Item):
 
 equipmentStats = {
     equipmentTypes.Helmet: {
-
+        "WoodenHelmet": {
+            "description": "A helmet made of wood, forged in the amazon forests",
+            "defense": 10,
+        }
     },
     equipmentTypes.Chestplate: {
 
