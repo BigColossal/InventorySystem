@@ -6,12 +6,14 @@ class UI:
         self.active = True
 
     def display_menu(self):
+        print("What would you like to do?\n")
         print("1. See inventory")
         print("2. Create items")
         print("3. Create equipment")
         print("4. Equip equipment")
         print("5. Unequip Equipment")
         print("6. Remove item")
+        print("7. Inspect Item/Equipment")
         print("7. Quit")
 
     def menu_choices_manager(self, choice):
@@ -48,10 +50,7 @@ class UI:
     def remove_item(self):
         pass
 
-
-
     def ui_loop(self):
         print("Welcome to Jeremy's inventory system!")
-        print("What would you like to do?\n")
-
-        self.display_menu()
+        while self.active:
+            self.display_menu()

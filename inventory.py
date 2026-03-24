@@ -11,7 +11,8 @@ class Inventory:
         self.needsUpdate = True
 
     def displayFullInventory(self) -> None:
-        pass
+        items = self.getItems()
+        equipped = self.getEquipped()
 
     def createInventoryFile(self):
         with open("inventory.txt", "w") as f:
