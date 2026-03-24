@@ -43,13 +43,7 @@ class Inventory:
         if not self.needsUpdate:
             return self.__items
         else:
-                try:
-                    with open("inventory.txt", 'r') as f:
-                        lines = f.readlines()
-                except FileNotFoundError:
-                    self.createInventoryFile()
-                    with open("inventory.txt", "r") as f:
-                        lines = f.readlines()
+                lines = self.readInventoryContents()
 
                 for line in lines:
                     if line[0:len(Inventory.equippedLineStarter)] == Inventory.equippedLineStarter:
@@ -63,6 +57,7 @@ class Inventory:
                         # for each item (Ex: LargePotion 3), set name and their 
                         for item in items:
                             self.__items[item[0]] = item[1]
+                self.needsUpdate = False
                 return self.__items
 
     def updateItems(self, newItems: list):
@@ -70,13 +65,7 @@ class Inventory:
         Update items within inventory.txt
         """
 
-        try:
-            with open("inventory.txt", "r") as f:
-                lines = f.readlines()
-        except FileNotFoundError:
-            self.createInventoryFile()
-            with open("inventory.txt", "r") as f:
-                lines = f.readlines()
+        lines = self.readInventoryContents()
 
         for i, line in enumerate(lines):
             if line.startswith(Inventory.equippedLineStarter):
@@ -128,8 +117,22 @@ class Inventory:
         with open("inventory.txt", "w") as f:
             f.writelines(lines)
 
+        self.needsUpdate = True
+
     def removeItems(self, item, amt):
-        pass
+        lines = self.readInventoryContents()
+        self.needsUpdate = True
+
+    def readInventoryContents(self):
+        try:
+            with open("inventory.txt", "r") as f:
+                lines = f.readlines()
+        except FileNotFoundError:
+            self.createInventoryFile()
+            with open("inventory.txt", "r") as f:
+                lines = f.readlines()
+        return lines
+
 
     def getEquipped(self):
         pass
@@ -138,8 +141,10 @@ class Inventory:
         newEquipString, inv = self.getEquipString()
         newEquipString = list(map(lambda x: x.split(":"), newEquipString))
         for e in equipments:
-            newEquipString[e.type.value][1] = e.name
-        finalString = "equipped " + " ".join(list(map(lambda x: ":".join(x), newEquipString)))
+            if not e.equipped:
+                newEquipString[e.type.value][1] = e.name
+                e.equipped = True
+        finalString = " ".join(list(map(lambda x: ":".join(x), newEquipString)))
 
         if inv[1:]:
             items = inv[1:]
@@ -162,6 +167,15 @@ class Inventory:
 
     def removeEquipped(self, equipment_type):
         newEquipString, inv = self.getEquipString()
+        newEquipString = list(map(lambda e_pair: e_pair.split(":"), newEquipString))
+
+        newEquipString[equipment_type.value][1] = "None"
+
+        finalString = " ".join(list(map(lambda x: ":".join(x), newEquipString)))
+        inv[0] = finalString
+
+        with open("inventory.txt", 'w') as f:
+            f.write("\n".join(inv))
 
 class Item:
     def __init__(self, name):
@@ -171,6 +185,7 @@ class Equipment(Item):
     def __init__(self, name, type):
         super().__init__(name)
         self.type = type
+        self.equipped = False
 
 
 inv = Inventory()
@@ -182,7 +197,8 @@ testItem3 = Item("Potion3")
 testItem4 = Item("Potion4")
 
 def main():
-    inv.updateItems([[testItem1, 2], [testItem2, 1], [testItem3, 4], [testItem4, 10]])
+    # inv.updateEquipped([TestE1])
+    inv.removeEquipped(equipmentTypes.Bow)
 
 if __name__ == "__main__":
     main()
