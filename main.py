@@ -15,7 +15,7 @@ class equipmentTypes(Enum):
     Wand = 12
     Accessory = 13
     
-EQUIP_STRING_TEMPLATE = "equipped Helmet:None Chestplate:None Leggings:None RightGlove:None LeftGlove:None Boots:None Sword:None LongSword:None DualBlades:None Spear:None Bow:None Wand:None Accessory1:None Accessory2:None Accessory3:None"
+EQUIP_STRING_TEMPLATE = "equipped Helmet:None Chestplate:None Leggings:None RightGlove:None LeftGlove:None Boots:None Sword:None LongSword:None DualBlades:None Spear:None Bow:None Wand:None Accessory1:None Accessory2:None Accessory3:None\n"
 
 class Inventory:
     """
@@ -91,7 +91,7 @@ class Inventory:
                 amount = int(amount)
 
                 # check if this item exists in newItems
-                match = next((x for x in newItems if x[0] == name), None)
+                match = next((x for x in newItems if x[0].name == name), None)
 
                 if match:
                     amount += match[1]  # add quantities
@@ -110,7 +110,7 @@ class Inventory:
             itemsToAdd = newItems[:space]
             newItems = newItems[space:]
 
-            items.extend(f"{x[0]} {x[1]}" for x in itemsToAdd)
+            items.extend(f"{x[0].name} {x[1]}" for x in itemsToAdd)
 
             lines[i] = ",".join(items) + ",\n"
 
@@ -122,7 +122,7 @@ class Inventory:
             itemsToAdd = newItems[:Inventory.inventoryLineCapacity]
             newItems = newItems[Inventory.inventoryLineCapacity:]
 
-            line = ",".join(f"{x[0]} {x[1]}" for x in itemsToAdd) + ",\n"
+            line = ",".join(f"{x[0].name} {x[1]}" for x in itemsToAdd) + ",\n"
             lines.append(line)
 
         with open("inventory.txt", "w") as f:
@@ -176,9 +176,13 @@ class Equipment(Item):
 inv = Inventory()
 TestE1 = Equipment("Drako", equipmentTypes.Bow)
 TestE2 = Equipment("Blit", equipmentTypes.Spear)
+testItem1 = Item("Potion1")
+testItem2 = Item("Potion2")
+testItem3 = Item("Potion3")
+testItem4 = Item("Potion4")
 
 def main():
-    pass
+    inv.updateItems([[testItem1, 2], [testItem2, 1], [testItem3, 4], [testItem4, 10]])
 
 if __name__ == "__main__":
     main()
