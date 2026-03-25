@@ -438,3 +438,16 @@ def getEquipmentStats(equipment):
 
 def getItemDescription(item):
     return itemDescriptions[item.type][item.name]["description"]
+
+def createItem(name):
+    for itemType, items in itemDescriptions.items():
+        if name in items:
+            return Item(name, itemType)
+    raise ValueError(f"Unknown item {name}")
+
+
+def createEquipment(name):
+    for equipType, items in equipmentStats.items():
+        if name in items:
+            return Equipment(name, equipType)
+    raise ValueError(f"Unknown equipment {name}")

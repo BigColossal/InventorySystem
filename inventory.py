@@ -5,49 +5,52 @@ class Inventory:
     equippedLineStarter = "equipped"
     inventoryLineCapacity = 8
     EQUIP_STRING_TEMPLATE = "equipped Helmet:None Chestplate:None Leggings:None RightGlove:None LeftGlove:None Boots:None Sword:None LongSword:None DualBlades:None Spear:None Bow:None Wand:None Accessory1:None Accessory2:None Accessory3:None\n"
+
     def __init__(self):
         self.__items = {}
         self.__equipped = {}
         self.needsUpdate = True
 
-    def displayFullInventory(self) -> None:
+    def displayFullInventory(self):
         items = self.getItems()
         equipped = self.getEquipped()
+
+        result = "Inventory:\n"
+        for name, amt in items.items():
+            result += f"{name}: {amt}\n"
+
+        result += "\nEquipped:\n"
+        for slot, item in equipped.items():
+            result += f"{slot}: {item}\n"
+
+        return result
 
     def createInventoryFile(self):
         with open("inventory.txt", "w") as f:
             f.write(Inventory.EQUIP_STRING_TEMPLATE)
-        
-    def getItems(self) -> dict:
-        """
-        items getter 
-        """
 
+    def getItems(self) -> dict:
         if not self.needsUpdate:
             return self.__items
-        else:
-                lines = self.readInventoryContents()
 
-                for line in lines:
-                    if line[0:len(Inventory.equippedLineStarter)] == Inventory.equippedLineStarter:
-                        continue
-                    else:
-                        # line looks like this: "LargePotion 3,Iron 100,RawHide 20"
-                        # So we split the line by commas and then with each item pair we make them 
-                        # an array with the name being the first item and the amount being the second
-                        items = list(map(lambda item: item.split(), line.split(",")))
+        self.__items = {}
 
-                        # for each item (Ex: LargePotion 3), set name and their 
-                        for item in items:
-                            self.__items[item[0]] = item[1]
-                self.needsUpdate = False
-                return self.__items
+        lines = self.readInventoryContents()
+
+        for line in lines:
+            if line.startswith(Inventory.equippedLineStarter):
+                continue
+
+            items = [x for x in line.strip().split(",") if x]
+
+            for item in items:
+                name, amount = item.split()
+                self.__items[name] = int(amount)
+
+        self.needsUpdate = False
+        return self.__items
 
     def updateItems(self, newItems: list):
-        """
-        Update items within inventory.txt
-        """
-
         lines = self.readInventoryContents()
 
         for i, line in enumerate(lines):
@@ -55,24 +58,21 @@ class Inventory:
                 continue
 
             items = [x for x in line.strip().split(",") if x]
-            # if item already exists and isnt equipment, add to the amount
             updated_items = []
 
             for item in items:
                 name, amount = item.split()
                 amount = int(amount)
 
-                # check if this item exists in newItems
                 match = next((x for x in newItems if x[0].name == name), None)
 
                 if match:
-                    amount += match[1]  # add quantities
-                    newItems.remove(match)  # remove so we don’t re-add later
+                    amount += match[1]
+                    newItems.remove(match)
 
                 updated_items.append(f"{name} {amount}")
 
             items = updated_items
-
 
             space = Inventory.inventoryLineCapacity - len(items)
 
@@ -89,7 +89,6 @@ class Inventory:
             if not newItems:
                 break
 
-        # create new lines if items still remain
         while newItems:
             itemsToAdd = newItems[:Inventory.inventoryLineCapacity]
             newItems = newItems[Inventory.inventoryLineCapacity:]
@@ -104,6 +103,30 @@ class Inventory:
 
     def removeItems(self, item, amt):
         lines = self.readInventoryContents()
+
+        for i, line in enumerate(lines):
+            if line.startswith(Inventory.equippedLineStarter):
+                continue
+
+            items = [x for x in line.strip().split(",") if x]
+            updated = []
+
+            for entry in items:
+                name, amount = entry.split()
+                amount = int(amount)
+
+                if name == item:
+                    amount -= amt
+                    if amount <= 0:
+                        continue
+
+                updated.append(f"{name} {amount}")
+
+            lines[i] = ",".join(updated) + ",\n"
+
+        with open("inventory.txt", "w") as f:
+            f.writelines(lines)
+
         self.needsUpdate = True
 
     def readInventoryContents(self):
@@ -114,55 +137,46 @@ class Inventory:
             self.createInventoryFile()
             with open("inventory.txt", "r") as f:
                 lines = f.readlines()
+
         return lines
 
-
     def getEquipped(self):
-        """
-        equipment getter 
-        """
-
         if not self.needsUpdate:
             return self.__equipped
-        else:
-                lines = self.readInventoryContents()
 
-                for line in lines:
-                    if line[0:len(Inventory.equippedLineStarter)] == Inventory.equippedLineStarter:
-                        continue
-                    else:
-                        # line looks like this: "LargePotion 3,Iron 100,RawHide 20"
-                        # So we split the line by commas and then with each item pair we make them 
-                        # an array with the name being the first item and the amount being the second
-                        items = list(map(lambda item: item.split(), line.split(",")))
+        equipString, _ = self.getEquipString()
 
-                        # for each item (Ex: LargePotion 3), set name and their 
-                        for item in items:
-                            self.__items[item[0]] = item[1]
-                self.needsUpdate = False
-                return self.__items
-        
+        self.__equipped = {}
+
+        for pair in equipString[1:]:  # skip "equipped"
+            slot, item = pair.split(":")
+            self.__equipped[slot] = item
+
+        return self.__equipped
 
     def updateEquipped(self, equipments):
         newEquipString, inv = self.getEquipString()
-        newEquipString = list(map(lambda x: x.split(":"), newEquipString))
+        newEquipString = [x.split(":") for x in newEquipString]
+
         for e in equipments:
             if not e.equipped:
-                newEquipString[e.type.value][1] = e.name
+                index = e.type.value
+                newEquipString[index][1] = e.name
                 e.equipped = True
-        finalString = " ".join(list(map(lambda x: ":".join(x), newEquipString)))
 
-        if inv[1:]:
-            items = inv[1:]
-        else:
-            items = ""
-        with open("inventory.txt", 'w') as f:
-            f.write(f"{finalString}\n{items}")
+        finalString = " ".join(":".join(x) for x in newEquipString)
+
+        items = "".join(inv[1:]) if len(inv) > 1 else ""
+
+        with open("inventory.txt", "w") as f:
+            f.write(finalString + "\n")
+            f.write(items)
+
         self.needsUpdate = True
 
     def getEquipString(self):
         try:
-            with open("inventory.txt", 'r') as f:
+            with open("inventory.txt", "r") as f:
                 inventory = f.readlines()
                 newEquipString = inventory[0].split()
         except FileNotFoundError:
@@ -170,17 +184,20 @@ class Inventory:
             with open("inventory.txt", "r") as f:
                 inventory = f.readlines()
                 newEquipString = inventory[0].split()
+
         return newEquipString, inventory
 
     def removeEquipped(self, equipment_type):
         newEquipString, inv = self.getEquipString()
-        newEquipString = list(map(lambda e_pair: e_pair.split(":"), newEquipString))
+        newEquipString = [x.split(":") for x in newEquipString]
 
-        newEquipString[equipment_type.value][1] = "None"
+        index = equipment_type.value
+        newEquipString[index][1] = "None"
 
-        finalString = " ".join(list(map(lambda x: ":".join(x), newEquipString)))
-        inv[0] = finalString
+        finalString = " ".join(":".join(x) for x in newEquipString)
+        inv[0] = finalString + "\n"
 
-        with open("inventory.txt", 'w') as f:
-            f.write("\n".join(inv))
+        with open("inventory.txt", "w") as f:
+            f.writelines(inv)
+
         self.needsUpdate = True
