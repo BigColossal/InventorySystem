@@ -43,10 +43,24 @@ class UI:
         print("2. Crop")
         print("3. Potion")
         choice = input()
-        
+
 
     def create_equipment(self):
-        pass
+        print("What type of equipment would you like to create?")
+        print("1. Helmet")
+        print("2. Chestplate")
+        print("3. Right Glove")
+        print("4. Left Glove")
+        print("5. Leggings")
+        print("6. Boots")
+        print("7. Sword")
+        print("8. Dualblades")
+        print("9. Spear")
+        print("10. Longsword")
+        print("11. Bow")
+        print("12. Wand")
+        print("13. Accessory")
+        choice = input()
 
     def equip_equipment(self):
         pass
