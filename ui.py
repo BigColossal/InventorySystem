@@ -31,12 +31,19 @@ class UI:
             case 6:
                 self.remove_item()
             case 7:
+                self.inspect_item()
+            case 8:
                 print("Goodbye!")
                 self.active = False
 
                 
     def create_items(self):
-        pass
+        print("What type of item would you like to create?")
+        print("1. Mineral")
+        print("2. Crop")
+        print("3. Potion")
+        choice = input()
+        
 
     def create_equipment(self):
         pass
@@ -48,6 +55,9 @@ class UI:
         pass
 
     def remove_item(self):
+        pass
+
+    def inspect_item(self):
         pass
 
     def ui_loop(self):
